@@ -2,12 +2,13 @@ package message_bus
 
 import (
 	"context"
+	"github.com/riid/messenger/bus"
 	"github.com/riid/messenger/envelope"
 	"github.com/riid/messenger/middleware"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestMessageBus_Dispatch(t *testing.T) {
@@ -15,12 +16,18 @@ func TestMessageBus_Dispatch(t *testing.T) {
 
 	e := envelope.FromMessage("test message")
 
-	expectedE := envelope.FromMessage("test expected message")
+	var b *messageBus
+	handlerCalled := false
+	m := middleware.HandleFunc(func(hCtx context.Context, hb bus.Bus, he envelope.Envelope) {
+		handlerCalled = true
+		assert.Same(t, ctx, hCtx)
+		assert.Same(t, b, hb)
+		assert.Same(t, e, he)
+		<-time.After(1 * time.Second)
+	})
 
-	m := &middleware.Mock{}
-	m.On("Handle", ctx, mock.Anything, e, mock.Anything).Return(expectedE)
+	b = New(m, 1, 4)
 
-	b := New(m, 1, 1)
 	wg := sync.WaitGroup{}
 	wg.Add(1)
 
@@ -30,11 +37,13 @@ func TestMessageBus_Dispatch(t *testing.T) {
 	}()
 
 	b.Dispatch(ctx, e)
+	b.Dispatch(ctx, e)
+	b.Dispatch(ctx, e)
 	cancel()
 
 	wg.Wait()
 
-	m.AssertCalled(t, "Handle", ctx, b, e, mock.Anything)
+	assert.True(t, handlerCalled)
 }
 
 func TestIdentityNext_should_always_return_the_passed_envelope(t *testing.T) {

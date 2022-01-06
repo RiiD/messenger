@@ -16,8 +16,8 @@ func New(middleware middleware.Middleware, queueSize int, numWorkers int) *messa
 	return &messageBus{
 		middleware: middleware,
 		numWorkers: numWorkers,
-
-		q: make(chan job, queueSize),
+		draining:   &sync.WaitGroup{},
+		q:          make(chan job, queueSize),
 	}
 }
 
@@ -25,10 +25,13 @@ type messageBus struct {
 	middleware middleware.Middleware
 	numWorkers int
 
+	draining *sync.WaitGroup
+
 	q chan job
 }
 
 func (b *messageBus) Dispatch(ctx context.Context, e envelope.Envelope) {
+	b.draining.Add(1)
 	b.q <- job{
 		e:   e,
 		ctx: ctx,
@@ -39,8 +42,25 @@ func (b *messageBus) Run(ctx context.Context) error {
 	wg := sync.WaitGroup{}
 	wg.Add(b.numWorkers)
 	for i := 0; i < b.numWorkers; i++ {
+		q := make(chan job, 0)
+
 		go func() {
-			b.work(ctx)
+			<-ctx.Done()
+			b.draining.Wait()
+			close(q)
+		}()
+
+		go func() {
+			for j := range b.q {
+				q <- j
+				b.draining.Done()
+			}
+		}()
+
+		go func() {
+			for j := range q {
+				b.middleware.Handle(j.ctx, b, j.e, identityNext)
+			}
 			wg.Done()
 		}()
 	}
@@ -48,18 +68,6 @@ func (b *messageBus) Run(ctx context.Context) error {
 	wg.Wait()
 
 	return ctx.Err()
-}
-
-func (b *messageBus) work(ctx context.Context) {
-loop:
-	for {
-		select {
-		case j := <-b.q:
-			b.middleware.Handle(j.ctx, b, j.e, identityNext)
-		case <-ctx.Done():
-			break loop
-		}
-	}
 }
 
 func identityNext(_ context.Context, e envelope.Envelope) envelope.Envelope { return e }
