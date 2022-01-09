@@ -2,6 +2,7 @@ package envelope
 
 import (
 	"errors"
+	"github.com/riid/messenger"
 	"time"
 )
 
@@ -9,7 +10,7 @@ const timestampHeader = "X-Message-Timestamp"
 
 var ErrNoTimestamp = errors.New("no timestamp")
 
-func WithTimestamp(wrapped Envelope, timestamp time.Time) (Envelope, error) {
+func WithTimestamp(wrapped messenger.Envelope, timestamp time.Time) (messenger.Envelope, error) {
 	marshaled, err := timestamp.MarshalText()
 	if err != nil {
 		return nil, err
@@ -18,11 +19,11 @@ func WithTimestamp(wrapped Envelope, timestamp time.Time) (Envelope, error) {
 	return WithHeader(wrapped, timestampHeader, string(marshaled)), nil
 }
 
-func WithoutTimestamp(e Envelope) Envelope {
+func WithoutTimestamp(e messenger.Envelope) messenger.Envelope {
 	return WithoutHeader(e, timestampHeader)
 }
 
-func Timestamp(e Envelope) (time.Time, error) {
+func Timestamp(e messenger.Envelope) (time.Time, error) {
 	ct, found := e.LastHeader(timestampHeader)
 	if !found {
 		return time.Time{}, ErrNoTimestamp

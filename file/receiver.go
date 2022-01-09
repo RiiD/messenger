@@ -3,6 +3,7 @@ package file
 import (
 	"context"
 	"encoding/json"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 )
 
@@ -18,13 +19,13 @@ type receiver struct {
 	filename string
 }
 
-func (r *receiver) Receive(ctx context.Context) (<-chan envelope.Envelope, error) {
+func (r *receiver) Receive(ctx context.Context) (<-chan messenger.Envelope, error) {
 	lines, err := r.follower.Follow(ctx, r.filename)
 	if err != nil {
 		return nil, err
 	}
 
-	ch := make(chan envelope.Envelope, 0)
+	ch := make(chan messenger.Envelope, 0)
 
 	go func() {
 		<-ctx.Done()
@@ -39,7 +40,7 @@ func (r *receiver) Receive(ctx context.Context) (<-chan envelope.Envelope, error
 	return ch, nil
 }
 
-func (r *receiver) readLines(lines <-chan []byte, ch chan envelope.Envelope) {
+func (r *receiver) readLines(lines <-chan []byte, ch chan messenger.Envelope) {
 	for buf := range lines {
 		if buf == nil {
 			break
@@ -51,7 +52,7 @@ func (r *receiver) readLines(lines <-chan []byte, ch chan envelope.Envelope) {
 			break
 		}
 
-		var e envelope.Envelope = envelope.FromMessage(l.Body)
+		var e messenger.Envelope = envelope.FromMessage(l.Body)
 		e = envelope.WithHeaders(e, l.Headers)
 		ch <- e
 	}

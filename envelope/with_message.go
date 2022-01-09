@@ -1,6 +1,8 @@
 package envelope
 
-func WithMessage(e Envelope, body interface{}) *withMessage {
+import "github.com/riid/messenger"
+
+func WithMessage(e messenger.Envelope, body interface{}) *withMessage {
 	return &withMessage{
 		message: body,
 		wrapped: e,
@@ -9,7 +11,7 @@ func WithMessage(e Envelope, body interface{}) *withMessage {
 
 type withMessage struct {
 	message interface{}
-	wrapped Envelope
+	wrapped messenger.Envelope
 }
 
 func (w *withMessage) Message() interface{} {
@@ -36,7 +38,7 @@ func (w *withMessage) FirstHeader(name string) (string, bool) {
 	return w.wrapped.FirstHeader(name)
 }
 
-func (w *withMessage) Is(e Envelope) bool {
+func (w *withMessage) Is(e messenger.Envelope) bool {
 	if e == w {
 		return true
 	}

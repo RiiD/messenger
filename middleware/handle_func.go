@@ -2,13 +2,12 @@ package middleware
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
-	"github.com/riid/messenger/envelope"
+	"github.com/riid/messenger"
 )
 
-type HandleFunc func(ctx context.Context, b bus.Bus, e envelope.Envelope)
+type HandleFunc func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope)
 
-func (h HandleFunc) Handle(ctx context.Context, bus bus.Bus, e envelope.Envelope, next NextFunc) {
+func (h HandleFunc) Handle(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope, next messenger.NextFunc) {
 	h(ctx, bus, e)
 	next(ctx, e)
 }

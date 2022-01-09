@@ -1,10 +1,11 @@
-package transport
+package bridge
 
 import (
 	"context"
 	"errors"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
+	libmock "github.com/riid/messenger/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -14,11 +15,11 @@ func TestBridge_Run_when_receiver_returns_error_should_return_the_same_error(t *
 	ctx := context.Background()
 	expectedErr := errors.New("test error")
 
-	r := &MockReceiver{}
+	r := &libmock.Receiver{}
 	r.On("Receive", ctx).Return(nil, expectedErr)
-	b := &bus.Mock{}
+	b := &libmock.Dispatcher{}
 
-	br := Bridge(r, b)
+	br := New(r, b)
 
 	err := br.Run(ctx)
 
@@ -32,25 +33,25 @@ func TestBridge_Run_when_received_envelopes_from_receiver_should_dispatch_them_i
 	e2 := envelope.FromMessage("Second message")
 	e3 := envelope.FromMessage("Third message")
 
-	ch := make(chan envelope.Envelope, 3)
+	ch := make(chan messenger.Envelope, 3)
 
 	ch <- e1
 	ch <- e2
 	ch <- e3
 	close(ch)
 
-	r := &MockReceiver{}
+	r := &libmock.Receiver{}
 	r.On("Receive", ctx).Return(ch, nil)
 	r.On("Alias").Return("test-alias")
 
-	var res []envelope.Envelope
-	b := &bus.Mock{}
+	var res []messenger.Envelope
+	b := &libmock.Dispatcher{}
 	b.On("Dispatch", ctx, mock.Anything).Run(func(args mock.Arguments) {
-		e := args.Get(1).(envelope.Envelope)
+		e := args.Get(1).(messenger.Envelope)
 		res = append(res, e)
 	})
 
-	br := Bridge(r, b)
+	br := New(r, b)
 	err := br.Run(ctx)
 
 	assert.Nil(t, err)

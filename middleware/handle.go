@@ -2,16 +2,15 @@ package middleware
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
-	"github.com/riid/messenger/envelope"
+	"github.com/riid/messenger"
 )
 
 type Handler interface {
-	Handle(ctx context.Context, b bus.Bus, e envelope.Envelope)
+	Handle(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope)
 }
 
-func Handle(handler Handler) Middleware {
-	return HandleFunc(func(ctx context.Context, b bus.Bus, e envelope.Envelope) {
+func Handle(handler Handler) messenger.Middleware {
+	return HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) {
 		handler.Handle(ctx, b, e)
 	})
 }

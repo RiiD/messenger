@@ -1,8 +1,8 @@
-package message_bus
+package bus
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/riid/messenger/middleware"
 	"github.com/stretchr/testify/assert"
@@ -16,9 +16,9 @@ func TestMessageBus_Dispatch(t *testing.T) {
 
 	e := envelope.FromMessage("test message")
 
-	var b *messageBus
+	var b *bus
 	handlerCalled := false
-	m := middleware.HandleFunc(func(hCtx context.Context, hb bus.Bus, he envelope.Envelope) {
+	m := middleware.HandleFunc(func(hCtx context.Context, hb messenger.Dispatcher, he messenger.Envelope) {
 		handlerCalled = true
 		assert.Same(t, ctx, hCtx)
 		assert.Same(t, b, hb)
@@ -48,7 +48,7 @@ func TestMessageBus_Dispatch(t *testing.T) {
 
 func TestMessageBus_Run_given_it_is_already_running_when_called_again_then_should_return_error(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	b := New(middleware.HandleFunc(func(ctx context.Context, b bus.Bus, e envelope.Envelope) {}), 4, 4)
+	b := New(middleware.HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) {}), 4, 4)
 
 	go func() {
 		_ = b.Run(ctx)
@@ -59,12 +59,4 @@ func TestMessageBus_Run_given_it_is_already_running_when_called_again_then_shoul
 	assert.Same(t, ErrAlreadyRunning, err)
 
 	cancel()
-}
-
-func TestIdentityNext_should_always_return_the_passed_envelope(t *testing.T) {
-	ctx := context.Background()
-	e := envelope.FromMessage("test message")
-	res := identityNext(ctx, e)
-
-	assert.Same(t, e, res)
 }

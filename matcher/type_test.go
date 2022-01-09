@@ -1,6 +1,7 @@
 package matcher
 
 import (
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -9,7 +10,7 @@ import (
 func TestType_Matches(t *testing.T) {
 	tcc := map[string]struct {
 		t   interface{}
-		e   envelope.Envelope
+		e   messenger.Envelope
 		res bool
 	}{
 		"when type is string and message is a string should return true": {

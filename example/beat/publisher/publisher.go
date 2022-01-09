@@ -3,20 +3,19 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"github.com/riid/messenger"
+	"github.com/riid/messenger/bridge"
+	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger/envelope"
+	"github.com/riid/messenger/file"
+	"github.com/riid/messenger/matcher"
+	"github.com/riid/messenger/middleware"
 	"github.com/riid/messenger/ticker"
-	"github.com/riid/messenger/transport"
 	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"time"
-
-	"github.com/riid/messenger/bus"
-	"github.com/riid/messenger/envelope"
-	"github.com/riid/messenger/file"
-	"github.com/riid/messenger/matcher"
-	"github.com/riid/messenger/message_bus"
-	"github.com/riid/messenger/middleware"
 )
 
 type Beat struct {
@@ -25,7 +24,7 @@ type Beat struct {
 
 type BeatEncoder struct{}
 
-func (b *BeatEncoder) Handle(ctx context.Context, bs bus.Bus, e envelope.Envelope) {
+func (b *BeatEncoder) Handle(ctx context.Context, bs messenger.Dispatcher, e messenger.Envelope) {
 	bytes, _ := json.Marshal(e.Message())
 	bs.Dispatch(ctx, envelope.WithMessageType(envelope.WithMessage(e, bytes), "Beat"))
 }
@@ -39,8 +38,8 @@ func main() {
 
 	t := ticker.New(time.NewTicker(1*time.Second), "every second")
 
-	b := message_bus.New(middleware.Stack(
-		middleware.Match(t, middleware.HandleFunc(func(_ context.Context, b bus.Bus, e envelope.Envelope) {
+	b := bus.New(middleware.Stack(
+		middleware.Match(t, middleware.HandleFunc(func(_ context.Context, b messenger.Dispatcher, e messenger.Envelope) {
 			beat := &Beat{Time: e.Message().(time.Time)}
 			log.Println("Publishing beat: ", beat.Time.Format(time.RFC3339))
 			b.Dispatch(ctx, envelope.FromMessage(beat))
@@ -54,7 +53,7 @@ func main() {
 	wg.Add(2)
 
 	go func() {
-		tickerBridge := transport.Bridge(t, b)
+		tickerBridge := bridge.New(t, b)
 		err = tickerBridge.Run(ctx)
 		if err != nil {
 			log.Println("Transport bridge error: ", err)
@@ -65,7 +64,7 @@ func main() {
 	go func() {
 		err = b.Run(ctx)
 		if err != nil {
-			log.Println("Bus error: ", err)
+			log.Println("Dispatcher error: ", err)
 		}
 		wg.Done()
 	}()

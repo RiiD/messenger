@@ -1,8 +1,8 @@
-package message_bus
+package bus
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/riid/messenger/middleware"
 	"sync"
@@ -11,7 +11,7 @@ import (
 
 func BenchmarkPublish(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
-	mb := New(middleware.HandleFunc(func(ctx context.Context, bus bus.Bus, e envelope.Envelope) {}), 32, 1)
+	mb := New(middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {}), 32, 1)
 
 	e := envelope.FromMessage("test")
 
@@ -37,9 +37,9 @@ func BenchmarkCreateMiddlewares(b *testing.B) {
 	b.ResetTimer()
 	b.ReportAllocs()
 
-	middlewares := make([]middleware.Middleware, b.N)
+	middlewares := make([]messenger.Middleware, b.N)
 	for i := 0; i < len(middlewares); i++ {
-		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus bus.Bus, e envelope.Envelope) {
+		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {
 		})
 	}
 
@@ -48,9 +48,9 @@ func BenchmarkCreateMiddlewares(b *testing.B) {
 
 func benchmark(b *testing.B, middlewareCount int) {
 	ctx, cancel := context.WithCancel(context.Background())
-	middlewares := make([]middleware.Middleware, middlewareCount)
+	middlewares := make([]messenger.Middleware, middlewareCount)
 	for i := 0; i < len(middlewares); i++ {
-		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus bus.Bus, e envelope.Envelope) {})
+		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {})
 	}
 
 	mb := New(middleware.Stack(middlewares...), 1, 1)

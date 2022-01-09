@@ -1,6 +1,8 @@
 package envelope
 
-func WithHeader(wrapped Envelope, key, value string) *withHeader {
+import "github.com/riid/messenger"
+
+func WithHeader(wrapped messenger.Envelope, key, value string) *withHeader {
 	return &withHeader{
 		wrapped: wrapped,
 		name:    key,
@@ -9,7 +11,7 @@ func WithHeader(wrapped Envelope, key, value string) *withHeader {
 }
 
 type withHeader struct {
-	wrapped Envelope
+	wrapped messenger.Envelope
 	name    string
 	value   string
 }
@@ -62,7 +64,7 @@ func (e *withHeader) FirstHeader(name string) (string, bool) {
 	return e.value, true
 }
 
-func (e *withHeader) Is(other Envelope) bool {
+func (e *withHeader) Is(other messenger.Envelope) bool {
 	if e == other {
 		return true
 	}
@@ -70,7 +72,7 @@ func (e *withHeader) Is(other Envelope) bool {
 	return e.wrapped.Is(other)
 }
 
-func WithoutHeader(e Envelope, name string) *withoutHeader {
+func WithoutHeader(e messenger.Envelope, name string) *withoutHeader {
 	return &withoutHeader{
 		wrapped: e,
 		name:    name,
@@ -78,7 +80,7 @@ func WithoutHeader(e Envelope, name string) *withoutHeader {
 }
 
 type withoutHeader struct {
-	wrapped Envelope
+	wrapped messenger.Envelope
 	name    string
 }
 
@@ -124,7 +126,7 @@ func (w *withoutHeader) FirstHeader(name string) (string, bool) {
 	return "", false
 }
 
-func (w *withoutHeader) Is(other Envelope) bool {
+func (w *withoutHeader) Is(other messenger.Envelope) bool {
 	if w == other {
 		return true
 	}

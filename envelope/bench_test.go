@@ -1,6 +1,7 @@
 package envelope
 
 import (
+	"github.com/riid/messenger"
 	"strconv"
 	"testing"
 )
@@ -14,7 +15,7 @@ func BenchmarkCreateEnvelope(b *testing.B) {
 }
 
 func BenchmarkWrapHeaders(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 
 	b.ResetTimer()
 	b.ReportAllocs()
@@ -23,7 +24,7 @@ func BenchmarkWrapHeaders(b *testing.B) {
 }
 
 func BenchmarkReadFirst1Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 1)
 
 	b.ResetTimer()
@@ -36,7 +37,7 @@ func BenchmarkReadFirst1Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadFirst100Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 1)
 
 	b.ResetTimer()
@@ -49,7 +50,7 @@ func BenchmarkReadFirst100Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadFirst1Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 100)
 
 	b.ResetTimer()
@@ -62,7 +63,7 @@ func BenchmarkReadFirst1Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadFirst100Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 100)
 
 	b.ResetTimer()
@@ -75,7 +76,7 @@ func BenchmarkReadFirst100Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadLast1Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 1)
 
 	b.ResetTimer()
@@ -88,7 +89,7 @@ func BenchmarkReadLast1Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadLast100Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 1)
 
 	b.ResetTimer()
@@ -101,7 +102,7 @@ func BenchmarkReadLast100Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadLast1Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 100)
 
 	b.ResetTimer()
@@ -114,7 +115,7 @@ func BenchmarkReadLast1Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadLast100Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 100)
 
 	b.ResetTimer()
@@ -127,7 +128,7 @@ func BenchmarkReadLast100Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadMessage1Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 1)
 
 	b.ResetTimer()
@@ -140,7 +141,7 @@ func BenchmarkReadMessage1Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadMessage100Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 1)
 
 	b.ResetTimer()
@@ -153,7 +154,7 @@ func BenchmarkReadMessage100Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadMessage1Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 100)
 
 	b.ResetTimer()
@@ -166,7 +167,7 @@ func BenchmarkReadMessage1Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadMessage100Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 100)
 
 	b.ResetTimer()
@@ -179,7 +180,7 @@ func BenchmarkReadMessage100Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadHeaders1Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 1)
 
 	b.ResetTimer()
@@ -192,7 +193,7 @@ func BenchmarkReadHeaders1Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadHeaders100Header1Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 1)
 
 	b.ResetTimer()
@@ -205,7 +206,7 @@ func BenchmarkReadHeaders100Header1Value(b *testing.B) {
 }
 
 func BenchmarkReadHeaders1Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 1, 100)
 
 	b.ResetTimer()
@@ -218,7 +219,7 @@ func BenchmarkReadHeaders1Header100Value(b *testing.B) {
 }
 
 func BenchmarkReadHeaders100Header100Value(b *testing.B) {
-	var e Envelope = FromMessage("")
+	var e messenger.Envelope = FromMessage("")
 	e = wrapHeaders(e, 100, 100)
 
 	b.ResetTimer()
@@ -230,7 +231,7 @@ func BenchmarkReadHeaders100Header100Value(b *testing.B) {
 	})
 }
 
-func wrapHeaders(e Envelope, numOfHeaders int, numOfValues int) Envelope {
+func wrapHeaders(e messenger.Envelope, numOfHeaders int, numOfValues int) messenger.Envelope {
 	for i := 0; i < numOfValues; i++ {
 		for j := 0; j < numOfHeaders; j++ {
 			e = WithHeader(e, strconv.Itoa(j), strconv.Itoa(i))

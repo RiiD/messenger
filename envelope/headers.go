@@ -1,6 +1,8 @@
 package envelope
 
-func WithHeaders(wrapped Envelope, headers map[string][]string) *withHeaders {
+import "github.com/riid/messenger"
+
+func WithHeaders(wrapped messenger.Envelope, headers map[string][]string) *withHeaders {
 	return &withHeaders{
 		wrapped: wrapped,
 		headers: headers,
@@ -8,7 +10,7 @@ func WithHeaders(wrapped Envelope, headers map[string][]string) *withHeaders {
 }
 
 type withHeaders struct {
-	wrapped Envelope
+	wrapped messenger.Envelope
 	headers map[string][]string
 }
 
@@ -66,6 +68,6 @@ func (w *withHeaders) FirstHeader(name string) (string, bool) {
 	return values[0], true
 }
 
-func (w *withHeaders) Is(e Envelope) bool {
+func (w *withHeaders) Is(e messenger.Envelope) bool {
 	return w == e || w.wrapped.Is(e)
 }

@@ -1,8 +1,10 @@
 package event
 
-import "github.com/riid/messenger/envelope"
+import (
+	"github.com/riid/messenger"
+)
 
 type SendFailed struct {
-	Envelope envelope.Envelope
+	Envelope messenger.Envelope
 	Error    error
 }

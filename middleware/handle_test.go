@@ -2,8 +2,9 @@ package middleware
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
+	mock2 "github.com/riid/messenger/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -13,14 +14,14 @@ type mockHandler struct {
 	mock.Mock
 }
 
-func (m *mockHandler) Handle(ctx context.Context, bus bus.Bus, e envelope.Envelope) {
+func (m *mockHandler) Handle(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {
 	m.Called(ctx, bus, e)
 }
 
 func TestHandle_Handle_when_called_should_invoke_the_handler(t *testing.T) {
 	ctx := context.Background()
 	e := envelope.FromMessage([]byte("test body"))
-	b := &bus.Mock{}
+	b := &mock2.Dispatcher{}
 
 	handler := &mockHandler{}
 	handler.On("Handle", ctx, b, e)
@@ -28,10 +29,9 @@ func TestHandle_Handle_when_called_should_invoke_the_handler(t *testing.T) {
 	s := Handle(handler)
 
 	nextCalled := false
-	next := func(ctx context.Context, nextE envelope.Envelope) envelope.Envelope {
+	next := func(ctx context.Context, nextE messenger.Envelope) {
 		nextCalled = true
 		assert.Equal(t, nextE, e)
-		return nextE
 	}
 
 	s.Handle(ctx, b, e, next)

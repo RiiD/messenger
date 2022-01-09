@@ -1,13 +1,14 @@
 package envelope
 
 import (
+	"github.com/riid/messenger/mock"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestWithHeaders_Message_when_called_should_proxy_to_wrapped_envelope_message(t *testing.T) {
 	expectedMessage := "my message"
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Message").Return(expectedMessage)
 
 	wrapper := WithHeaders(wrapped, map[string][]string{})
@@ -34,7 +35,7 @@ func TestWithHeaders_Headers_when_called_should_return_wrapped_headers_merged_wi
 		"x-header-3": {"value 31", "value 32"},
 		"x-header-4": {"value 41", "value 42"},
 	}
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Headers").Return(wrappedHeaders)
 
 	e := WithHeaders(wrapped, ownHeaders)
@@ -45,7 +46,7 @@ func TestWithHeaders_Headers_when_called_should_return_wrapped_headers_merged_wi
 }
 
 func TestWithHeaders_Header_when_wrapped_and_own_headers_dont_have_records_for_given_name_should_return_empty_array(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Header", "x-test").Return([]string{})
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"other value"}})
@@ -56,7 +57,7 @@ func TestWithHeaders_Header_when_wrapped_and_own_headers_dont_have_records_for_g
 }
 
 func TestWithHeaders_Header_when_wrapped_have_headers_but_own_dont_should_return_wrapped_header_result(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Header", "x-test").Return([]string{"value 1", "value 2"})
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"other value"}})
@@ -67,7 +68,7 @@ func TestWithHeaders_Header_when_wrapped_have_headers_but_own_dont_should_return
 }
 
 func TestWithHeaders_Header_when_wrapped_dont_have_headers_but_own_does_should_return_own_headers_for_name(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Header", "x-test").Return([]string{})
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value 1", "value 2"}})
@@ -78,7 +79,7 @@ func TestWithHeaders_Header_when_wrapped_dont_have_headers_but_own_does_should_r
 }
 
 func TestWithHeaders_Header_when_wrapped_and_own_have_headers_should_return_headers_from_both(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Header", "x-test").Return([]string{"value 1", "value 2"})
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value 3", "value 4"}})
@@ -89,7 +90,7 @@ func TestWithHeaders_Header_when_wrapped_and_own_have_headers_should_return_head
 }
 
 func TestWithHeaders_HasHeader_when_wrapped_header_have_the_header_should_return_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("HasHeader", "x-test").Return(true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"other value"}})
@@ -100,7 +101,7 @@ func TestWithHeaders_HasHeader_when_wrapped_header_have_the_header_should_return
 }
 
 func TestWithHeaders_HasHeader_when_own_headers_have_the_header_and_wrapped_dont_should_return_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("HasHeader", "x-test").Return(false)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value"}})
@@ -111,7 +112,7 @@ func TestWithHeaders_HasHeader_when_own_headers_have_the_header_and_wrapped_dont
 }
 
 func TestWithHeaders_HasHeader_when_own_and_wrapped_headers_have_the_header_should_return_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("HasHeader", "x-test").Return(true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value"}})
@@ -122,7 +123,7 @@ func TestWithHeaders_HasHeader_when_own_and_wrapped_headers_have_the_header_shou
 }
 
 func TestWithHeaders_HasHeader_when_own_and_wrapped_headers_dont_have_the_header_should_return_false(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("HasHeader", "x-test").Return(false)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"value"}})
@@ -133,7 +134,7 @@ func TestWithHeaders_HasHeader_when_own_and_wrapped_headers_dont_have_the_header
 }
 
 func TestWithHeaders_LastHeader_when_wrapped_and_own_headers_dont_have_the_header_should_return_empty_string_and_false(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("LastHeader", "x-test").Return("", false)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"value"}})
@@ -145,7 +146,7 @@ func TestWithHeaders_LastHeader_when_wrapped_and_own_headers_dont_have_the_heade
 }
 
 func TestWithHeaders_LastHeader_when_wrapped_have_header_and_own_dont_should_return_results_of_wrapped(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("LastHeader", "x-test").Return("test value", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"value"}})
@@ -157,7 +158,7 @@ func TestWithHeaders_LastHeader_when_wrapped_have_header_and_own_dont_should_ret
 }
 
 func TestWithHeaders_LastHeader_when_own_have_the_header_should_return_last_value_and_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("LastHeader", "x-test").Return("value 1", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value 2", "value 3"}})
@@ -169,7 +170,7 @@ func TestWithHeaders_LastHeader_when_own_have_the_header_should_return_last_valu
 }
 
 func TestWithHeaders_LastHeader_when_own_have_the_header_but_without_values_should_return_results_from_wrapper_last_header(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("LastHeader", "x-test").Return("value 1", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {}})
@@ -181,7 +182,7 @@ func TestWithHeaders_LastHeader_when_own_have_the_header_but_without_values_shou
 }
 
 func TestWithHeaders_FirstHeader_when_wrapped_and_own_headers_dont_have_the_header_should_return_empty_string_and_false(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("FirstHeader", "x-test").Return("", false)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"value"}})
@@ -193,7 +194,7 @@ func TestWithHeaders_FirstHeader_when_wrapped_and_own_headers_dont_have_the_head
 }
 
 func TestWithHeaders_FirstHeader_when_wrapped_have_header_and_own_dont_should_return_results_of_wrapped(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("FirstHeader", "x-test").Return("test value", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-other": {"value"}})
@@ -205,7 +206,7 @@ func TestWithHeaders_FirstHeader_when_wrapped_have_header_and_own_dont_should_re
 }
 
 func TestWithHeaders_FirstHeader_when_own_and_wrapped_have_the_header_should_return_results_of_wrapped(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("FirstHeader", "x-test").Return("value 1", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value 2", "value 3"}})
@@ -217,7 +218,7 @@ func TestWithHeaders_FirstHeader_when_own_and_wrapped_have_the_header_should_ret
 }
 
 func TestWithHeaders_FirstHeader_when_own_have_the_header_but_without_values_should_return_results_from_wrapper_first_header(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("FirstHeader", "x-test").Return("value 1", true)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {}})
@@ -229,7 +230,7 @@ func TestWithHeaders_FirstHeader_when_own_have_the_header_but_without_values_sho
 }
 
 func TestWithHeaders_FirstHeader_when_own_have_the_header_but_wrapped_dont_should_return_first_header_and_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("FirstHeader", "x-test").Return("", false)
 
 	e := WithHeaders(wrapped, map[string][]string{"x-test": {"value 1", "value 2"}})
@@ -241,7 +242,7 @@ func TestWithHeaders_FirstHeader_when_own_have_the_header_but_wrapped_dont_shoul
 }
 
 func TestWithHeaders_Is_when_other_is_same_as_self_should_return_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	e := WithHeaders(wrapped, map[string][]string{})
 
 	res := e.Is(e)
@@ -250,7 +251,7 @@ func TestWithHeaders_Is_when_other_is_same_as_self_should_return_true(t *testing
 }
 
 func TestWithHeaders_Is_when_other_is_not_same_as_self_but_wrapped_is_returns_true_should_return_true(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Is", wrapped).Return(true)
 
 	e := WithHeaders(wrapped, map[string][]string{})
@@ -261,7 +262,7 @@ func TestWithHeaders_Is_when_other_is_not_same_as_self_but_wrapped_is_returns_tr
 }
 
 func TestWithHeaders_Is_when_other_is_not_same_as_self_and_wrapped_is_returns_false_should_return_false(t *testing.T) {
-	wrapped := &Mock{}
+	wrapped := &mock.Envelope{}
 	wrapped.On("Is", wrapped).Return(false)
 
 	e := WithHeaders(wrapped, map[string][]string{})

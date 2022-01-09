@@ -3,10 +3,10 @@ package middleware
 import (
 	"context"
 	"errors"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/riid/messenger/event"
-	"github.com/riid/messenger/transport"
+	"github.com/riid/messenger/mock"
 	"testing"
 )
 
@@ -14,14 +14,14 @@ func TestSend_Handle_sends_message_using_sender(t *testing.T) {
 	ctx := context.Background()
 	e := envelope.FromMessage([]byte("test body"))
 
-	sender := &transport.MockSender{}
+	sender := &mock.Sender{}
 	sender.On("Send", ctx, e).Return(nil)
 
-	b := &bus.Mock{}
+	b := &mock.Dispatcher{}
 
 	s := Send(sender)
 
-	s.Handle(ctx, b, e, func(ctx context.Context, e envelope.Envelope) envelope.Envelope { return e })
+	s.Handle(ctx, b, e, func(ctx context.Context, e messenger.Envelope) {})
 	sender.MethodCalled("Send", ctx, e)
 }
 
@@ -32,13 +32,13 @@ func TestSend_Handle_when_sender_returns_error_it_should_dispatch_event_to_event
 
 	expectedEvent := envelope.FromMessage(&event.SendFailed{Envelope: e, Error: expectedErr})
 
-	sender := &transport.MockSender{}
+	sender := &mock.Sender{}
 	sender.On("Send", ctx, e).Return(expectedErr)
 
-	b := &bus.Mock{}
+	b := &mock.Dispatcher{}
 	b.On("Dispatch", ctx, expectedEvent).Return(expectedEvent)
 
 	s := Send(sender)
 
-	s.Handle(ctx, b, e, func(ctx context.Context, e envelope.Envelope) envelope.Envelope { return e })
+	s.Handle(ctx, b, e, func(ctx context.Context, e messenger.Envelope) {})
 }

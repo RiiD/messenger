@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/riid/messenger/envelope"
+	"github.com/riid/messenger"
 	"os"
 )
 
@@ -28,7 +28,7 @@ type sender struct {
 	file *os.File
 }
 
-func (s *sender) Send(_ context.Context, e envelope.Envelope) error {
+func (s *sender) Send(_ context.Context, e messenger.Envelope) error {
 	l := &line{
 		Headers: e.Headers(),
 		Body:    e.Message().([]byte),

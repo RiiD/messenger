@@ -1,5 +1,7 @@
 package envelope
 
+import "github.com/riid/messenger"
+
 func FromMessage(message interface{}) *fromMessage {
 	return &fromMessage{
 		message: message,
@@ -34,6 +36,6 @@ func (e *fromMessage) FirstHeader(_ string) (string, bool) {
 	return "", false
 }
 
-func (e *fromMessage) Is(other Envelope) bool {
+func (e *fromMessage) Is(other messenger.Envelope) bool {
 	return e == other
 }

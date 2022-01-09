@@ -2,14 +2,13 @@ package middleware
 
 import (
 	"context"
-	"github.com/riid/messenger/bus"
+	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
 	"github.com/riid/messenger/event"
-	"github.com/riid/messenger/transport"
 )
 
-func Send(sender transport.Sender) Middleware {
-	return HandleFunc(func(ctx context.Context, b bus.Bus, e envelope.Envelope) {
+func Send(sender messenger.Sender) messenger.Middleware {
+	return HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) {
 		err := sender.Send(ctx, e)
 		if err != nil {
 			b.Dispatch(ctx, envelope.FromMessage(&event.SendFailed{

@@ -1,4 +1,4 @@
-package envelope
+package messenger
 
 type Envelope interface {
 	Message() interface{}

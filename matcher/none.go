@@ -1,11 +1,11 @@
 package matcher
 
 import (
-	"github.com/riid/messenger/envelope"
+	"github.com/riid/messenger"
 )
 
-func None() Matcher {
-	return MatchFunc(func(_ envelope.Envelope) bool {
+func None() messenger.Matcher {
+	return MatchFunc(func(_ messenger.Envelope) bool {
 		return false
 	})
 }
