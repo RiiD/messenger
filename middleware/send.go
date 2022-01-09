@@ -9,7 +9,7 @@ import (
 
 // Send sends envelopes to the sender. It dispatches event.SendFailed if send failed with error and envelope attached.
 func Send(sender messenger.Sender) messenger.Middleware {
-	return HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) {
+	return HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
 		err := sender.Send(ctx, e)
 		if err != nil {
 			b.Dispatch(ctx, envelope.FromMessage(&event.SendFailed{
@@ -17,5 +17,7 @@ func Send(sender messenger.Sender) messenger.Middleware {
 				Error:    err,
 			}))
 		}
+
+		return e
 	})
 }

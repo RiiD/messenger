@@ -24,9 +24,11 @@ type Beat struct {
 
 type BeatEncoder struct{}
 
-func (b *BeatEncoder) Handle(ctx context.Context, bs messenger.Dispatcher, e messenger.Envelope) {
+func (b *BeatEncoder) Handle(ctx context.Context, bs messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
 	bytes, _ := json.Marshal(e.Message())
 	bs.Dispatch(ctx, envelope.WithMessageType(envelope.WithMessage(e, bytes), "Beat"))
+
+	return e
 }
 
 func main() {
@@ -39,10 +41,12 @@ func main() {
 	t := ticker.New(time.NewTicker(1*time.Second), "every second")
 
 	b := bus.New(middleware.Stack(
-		middleware.Match(t, middleware.HandleFunc(func(_ context.Context, b messenger.Dispatcher, e messenger.Envelope) {
+		middleware.Match(t, middleware.HandleFunc(func(_ context.Context, b messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
 			beat := &Beat{Time: e.Message().(time.Time)}
 			log.Println("Publishing beat: ", beat.Time.Format(time.RFC3339))
 			b.Dispatch(ctx, envelope.FromMessage(beat))
+
+			return e
 		})),
 
 		middleware.Match(matcher.Type(&Beat{}), middleware.Handle(&BeatEncoder{})),

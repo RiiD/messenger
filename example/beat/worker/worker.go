@@ -23,18 +23,22 @@ type Beat struct {
 
 type BeatParser struct{}
 
-func (b *BeatParser) Handle(ctx context.Context, bs messenger.Dispatcher, e messenger.Envelope) {
+func (b *BeatParser) Handle(ctx context.Context, bs messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
 	bytes := e.Message().([]byte)
 	beat := &Beat{}
 	_ = json.Unmarshal(bytes, beat)
 	bs.Dispatch(ctx, envelope.FromMessage(beat))
+
+	return e
 }
 
 type BeatHandler struct{}
 
-func (b *BeatHandler) Handle(_ context.Context, _ messenger.Dispatcher, e messenger.Envelope) {
+func (b *BeatHandler) Handle(_ context.Context, _ messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
 	beat := e.Message().(*Beat)
 	log.Println("Got beat from: ", beat.Time.Format(time.RFC3339))
+
+	return e
 }
 
 func main() {

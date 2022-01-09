@@ -11,7 +11,9 @@ import (
 
 func BenchmarkPublish(b *testing.B) {
 	ctx, cancel := context.WithCancel(context.Background())
-	mb := New(middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {}), 32, 1)
+	mb := New(middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
+		return e
+	}), 32, 1)
 
 	e := envelope.FromMessage("test")
 
@@ -39,7 +41,8 @@ func BenchmarkCreateMiddlewares(b *testing.B) {
 
 	middlewares := make([]messenger.Middleware, b.N)
 	for i := 0; i < len(middlewares); i++ {
-		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {
+		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
+			return e
 		})
 	}
 
@@ -50,7 +53,9 @@ func benchmark(b *testing.B, middlewareCount int) {
 	ctx, cancel := context.WithCancel(context.Background())
 	middlewares := make([]messenger.Middleware, middlewareCount)
 	for i := 0; i < len(middlewares); i++ {
-		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {})
+		middlewares[i] = middleware.HandleFunc(func(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
+			return e
+		})
 	}
 
 	mb := New(middleware.Stack(middlewares...), 1, 1)

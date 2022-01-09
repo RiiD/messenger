@@ -18,12 +18,14 @@ func TestMessageBus_Dispatch(t *testing.T) {
 
 	var b *bus
 	handlerCalled := false
-	m := middleware.HandleFunc(func(hCtx context.Context, hb messenger.Dispatcher, he messenger.Envelope) {
+	m := middleware.HandleFunc(func(hCtx context.Context, hb messenger.Dispatcher, he messenger.Envelope) messenger.Envelope {
 		handlerCalled = true
 		assert.Same(t, ctx, hCtx)
 		assert.Same(t, b, hb)
 		assert.Same(t, e, he)
 		<-time.After(1 * time.Second)
+
+		return he
 	})
 
 	b = New(m, 1, 4)
@@ -48,7 +50,9 @@ func TestMessageBus_Dispatch(t *testing.T) {
 
 func TestMessageBus_Run_given_it_is_already_running_when_called_again_then_should_return_error(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
-	b := New(middleware.HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) {}), 4, 4)
+	b := New(middleware.HandleFunc(func(ctx context.Context, b messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
+		return e
+	}), 4, 4)
 
 	go func() {
 		_ = b.Run(ctx)

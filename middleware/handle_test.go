@@ -14,24 +14,29 @@ type mockHandler struct {
 	mock.Mock
 }
 
-func (m *mockHandler) Handle(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) {
-	m.Called(ctx, bus, e)
+func (m *mockHandler) Handle(ctx context.Context, bus messenger.Dispatcher, e messenger.Envelope) messenger.Envelope {
+	args := m.Called(ctx, bus, e)
+	if e, ok := args.Get(0).(messenger.Envelope); ok {
+		return e
+	}
+	return nil
 }
 
 func TestHandle_Handle_when_called_should_invoke_the_handler(t *testing.T) {
 	ctx := context.Background()
-	e := envelope.FromMessage([]byte("test body"))
+	e := envelope.FromMessage("initial message")
+	handledE := envelope.FromMessage("handled message")
 	b := &mock2.Dispatcher{}
 
 	handler := &mockHandler{}
-	handler.On("Handle", ctx, b, e)
+	handler.On("Handle", ctx, b, e).Return(handledE)
 
 	s := Handle(handler)
 
 	nextCalled := false
-	next := func(ctx context.Context, nextE messenger.Envelope) {
+	next := func(ctx context.Context, e messenger.Envelope) {
 		nextCalled = true
-		assert.Equal(t, nextE, e)
+		assert.Same(t, handledE, e)
 	}
 
 	s.Handle(ctx, b, e, next)
