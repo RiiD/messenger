@@ -7,6 +7,7 @@ import (
 	"sync"
 )
 
+// ErrAlreadyRunning returned when Run is called on a running bus
 var ErrAlreadyRunning = errors.New("message bus is already running")
 
 type job struct {
@@ -14,6 +15,8 @@ type job struct {
 	ctx context.Context
 }
 
+// New returns a bus with limited number of workers and queue size. When number of pending jobs reaches queueSize
+// Dispatch will block until a worker takes a job from the queue.
 func New(middleware messenger.Middleware, queueSize int, numWorkers int) *bus {
 	return &bus{
 		middleware:  middleware,
@@ -36,6 +39,7 @@ type bus struct {
 	q chan job
 }
 
+// Dispatch adds job to message queue. If message queue is full it will block until workers take jobs from the queue.
 func (b *bus) Dispatch(ctx context.Context, e messenger.Envelope) {
 	b.draining.Add(1)
 	b.q <- job{
@@ -44,6 +48,8 @@ func (b *bus) Dispatch(ctx context.Context, e messenger.Envelope) {
 	}
 }
 
+// Run starts workers and blocks until context is cancelled.
+// If called when another instance is running will return ErrAlreadyRunning.
 func (b *bus) Run(ctx context.Context) error {
 	err := b.lockRun()
 	if err != nil {

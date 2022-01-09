@@ -5,6 +5,8 @@ import (
 	"github.com/riid/messenger"
 )
 
+// Match applies middleware if matcher matches envelope.
+// If matcher doesn't match it calls next middleware
 func Match(matcher messenger.Matcher, middleware messenger.Middleware) *match {
 	return &match{
 		matcher:    matcher,

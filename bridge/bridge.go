@@ -5,6 +5,7 @@ import (
 	"github.com/riid/messenger"
 )
 
+// New returns a bridge that directs envelopes from a receiver to the bus
 func New(receiver messenger.Receiver, bus messenger.Dispatcher) *bridge {
 	return &bridge{
 		receiver: receiver,
@@ -12,7 +13,6 @@ func New(receiver messenger.Receiver, bus messenger.Dispatcher) *bridge {
 	}
 }
 
-// bridge dispatches messenger.Envelope's received from the messenger.Receiver into the bus.Dispatcher
 type bridge struct {
 	receiver messenger.Receiver
 	bus      messenger.Dispatcher

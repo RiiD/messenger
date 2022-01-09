@@ -5,6 +5,7 @@ import (
 	"github.com/riid/messenger"
 )
 
+// Stack combines middlewares so next function in each middleware will invoke next middleware in the stack.
 func Stack(middlewares ...messenger.Middleware) *stack {
 	return &stack{middlewares: middlewares}
 }
