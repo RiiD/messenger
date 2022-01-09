@@ -46,6 +46,21 @@ func TestMessageBus_Dispatch(t *testing.T) {
 	assert.True(t, handlerCalled)
 }
 
+func TestMessageBus_Run_given_it_is_already_running_when_called_again_then_should_return_error(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	b := New(middleware.HandleFunc(func(ctx context.Context, b bus.Bus, e envelope.Envelope) {}), 4, 4)
+
+	go func() {
+		_ = b.Run(ctx)
+	}()
+	<-time.After(100 * time.Millisecond)
+
+	err := b.Run(ctx)
+	assert.Same(t, ErrAlreadyRunning, err)
+
+	cancel()
+}
+
 func TestIdentityNext_should_always_return_the_passed_envelope(t *testing.T) {
 	ctx := context.Background()
 	e := envelope.FromMessage("test message")
