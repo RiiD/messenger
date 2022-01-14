@@ -4,8 +4,9 @@ import (
 	"context"
 	"github.com/riid/messenger"
 	"github.com/riid/messenger/envelope"
-	"github.com/riid/messenger/mock"
+	libmock "github.com/riid/messenger/mock"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"testing"
 )
 
@@ -27,7 +28,7 @@ func (a *asserter) Handle(ctx context.Context, b messenger.Dispatcher, e messeng
 
 func TestStack(t *testing.T) {
 	ctx := context.Background()
-	b := &mock.Dispatcher{}
+	b := &libmock.Dispatcher{}
 	middlewares := make([]messenger.Middleware, 10)
 	for i := 0; i < len(middlewares); i++ {
 		middlewares[i] = &asserter{
@@ -48,4 +49,42 @@ func TestStack(t *testing.T) {
 
 	assert.Nil(t, nil)
 	assert.Equal(t, len(middlewares), lastEnvelope.Message())
+}
+
+func TestStack_Handle_context_within_the_stack_should_not_propagate_to_handlers_out_of_the_stack(t *testing.T) {
+	rootCtx := context.Background()
+	//goland:noinspection GoVetLostCancel
+	inStackCtx, _ := context.WithCancel(context.Background())
+
+	b := &libmock.Dispatcher{}
+	rootEnvelope := envelope.FromMessage("root envelope")
+	inStackEnvelope1 := envelope.FromMessage("in stack envelope 1")
+	inStackEnvelope2 := envelope.FromMessage("in stack envelope 2")
+
+	inStackMw1 := &libmock.Middleware{}
+	inStackMw1.On("Handle", rootCtx, b, rootEnvelope, mock.AnythingOfType("messenger.NextFunc")).Run(func(args mock.Arguments) {
+		println("inStackMw1")
+		nextFunc := args.Get(3).(messenger.NextFunc)
+		nextFunc(inStackCtx, inStackEnvelope1)
+	})
+
+	inStackMw2 := &libmock.Middleware{}
+	inStackMw2.On("Handle", inStackCtx, b, inStackEnvelope1, mock.AnythingOfType("messenger.NextFunc")).Run(func(args mock.Arguments) {
+		println("inStackMw2")
+		nextFunc := args.Get(3).(messenger.NextFunc)
+		nextFunc(inStackCtx, inStackEnvelope2)
+	})
+
+	stack := Stack(inStackMw1, inStackMw2)
+
+	nextCalled := false
+	stack.Handle(rootCtx, b, rootEnvelope, func(ctx context.Context, e messenger.Envelope) {
+		nextCalled = true
+		assert.Same(t, rootCtx, ctx)
+		assert.Same(t, inStackEnvelope2, e)
+	})
+
+	assert.True(t, nextCalled)
+	inStackMw1.AssertExpectations(t)
+	inStackMw2.AssertExpectations(t)
 }
