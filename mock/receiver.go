@@ -17,3 +17,11 @@ func (m *Receiver) Receive(ctx context.Context) (<-chan messenger.Envelope, erro
 	}
 	return args.Get(0).(chan messenger.Envelope), args.Error(1)
 }
+
+func (m *Receiver) Ack(ctx context.Context, e messenger.Envelope) error {
+	return m.Called(ctx, e).Error(0)
+}
+
+func (m *Receiver) Nack(ctx context.Context, e messenger.Envelope) error {
+	return m.Called(ctx, e).Error(0)
+}

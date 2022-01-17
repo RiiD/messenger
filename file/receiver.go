@@ -19,6 +19,14 @@ type receiver struct {
 	filename string
 }
 
+func (r *receiver) Ack(ctx context.Context, e messenger.Envelope) error {
+	return nil
+}
+
+func (r *receiver) Nack(ctx context.Context, e messenger.Envelope) error {
+	return nil
+}
+
 func (r *receiver) Receive(ctx context.Context) (<-chan messenger.Envelope, error) {
 	lines, err := r.follower.Follow(ctx, r.filename)
 	if err != nil {

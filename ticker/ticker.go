@@ -25,6 +25,14 @@ type ticker struct {
 	name   string
 }
 
+func (t *ticker) Ack(ctx context.Context, e messenger.Envelope) error {
+	return nil
+}
+
+func (t *ticker) Nack(ctx context.Context, e messenger.Envelope) error {
+	return nil
+}
+
 // Matches returns true if the envelope have ticker name in the header
 func (t *ticker) Matches(e messenger.Envelope) bool {
 	name, found := e.LastHeader(tickerNameHeader)
